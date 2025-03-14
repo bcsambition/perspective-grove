@@ -32,9 +32,13 @@ export const getAllArticles = async (): Promise<Article[]> => {
     
     for (const path in articleModules) {
       const content = articleModules[path];
-      const article = parseArticleContent(content);
-      if (article) {
-        articles.push(article);
+      try {
+        const article = parseArticleContent(content);
+        if (article) {
+          articles.push(article);
+        }
+      } catch (error) {
+        console.error(`Error parsing article at ${path}:`, error);
       }
     }
     
@@ -75,8 +79,7 @@ function parseArticleContent(fileContent: string): Article | null {
     const match = fileContent.match(frontmatterRegex);
     
     if (!match) {
-      console.error('Invalid article format');
-      return null;
+      throw new Error('Invalid article format');
     }
     
     const [, frontmatterStr, content] = match;
@@ -85,17 +88,20 @@ function parseArticleContent(fileContent: string): Article | null {
     // Parse frontmatter
     const lines = frontmatterStr.split('\n');
     for (const line of lines) {
-      const [key, ...valueParts] = line.split(':');
-      if (key && valueParts.length) {
-        let value = valueParts.join(':').trim();
-        
-        // Handle arrays (tags)
-        if (value.startsWith('[') && value.endsWith(']')) {
-          value = value.slice(1, -1);
-          frontmatter[key.trim()] = value.split(',').map(item => item.trim().replace(/"/g, '').replace(/'/g, ''));
-        } else {
-          frontmatter[key.trim()] = value;
-        }
+      if (!line.trim()) continue;
+      
+      const colonIndex = line.indexOf(':');
+      if (colonIndex === -1) continue;
+      
+      const key = line.slice(0, colonIndex).trim();
+      let value = line.slice(colonIndex + 1).trim();
+      
+      // Handle arrays (tags)
+      if (value.startsWith('[') && value.endsWith(']')) {
+        value = value.slice(1, -1);
+        frontmatter[key] = value.split(',').map(item => item.trim().replace(/"/g, '').replace(/'/g, ''));
+      } else {
+        frontmatter[key] = value;
       }
     }
     
@@ -107,7 +113,7 @@ function parseArticleContent(fileContent: string): Article | null {
       date: frontmatter.date || '',
       readTime: frontmatter.readTime || '',
       category: frontmatter.category || '',
-      tags: frontmatter.tags || [],
+      tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
       language: frontmatter.language || 'en',
       image: frontmatter.image || '',
       content: content.trim()

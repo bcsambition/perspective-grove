@@ -43,10 +43,10 @@ function formatMarkdownToHtml(markdown: string): string {
   html = html.replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
   
   // Convert paragraphs (blank lines between paragraphs)
-  html = html.replace(/\n\n(.*?)\n\n/gm, '</p><p>$1</p><p>');
+  html = html.replace(/\n\n(?!<h)/g, '</p><p>');
   
   // Convert line breaks
-  html = html.replace(/\n/g, '<br>');
+  html = html.replace(/\n(?!<)/g, '<br>');
   
   // Convert bold
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -59,7 +59,10 @@ function formatMarkdownToHtml(markdown: string): string {
   
   // Wrap in paragraph if not already
   if (!html.startsWith('<')) {
-    html = '<p>' + html + '</p>';
+    html = '<p>' + html;
+  }
+  if (!html.endsWith('>')) {
+    html = html + '</p>';
   }
   
   return html;

@@ -35,6 +35,8 @@ const ArticleContent: React.FC<ArticleContentProps> = ({ article }) => {
 
 // Helper function to convert markdown to HTML
 function formatMarkdownToHtml(markdown: string): string {
+  if (!markdown) return '<p>No content available</p>';
+  
   let html = markdown;
 
   // Convert headers (## Header)
@@ -56,6 +58,13 @@ function formatMarkdownToHtml(markdown: string): string {
   
   // Convert links
   html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+  
+  // Convert lists
+  html = html.replace(/^- (.*?)$/gm, '<li>$1</li>');
+  html = html.replace(/<li>.*?(<li>.*?)+/g, '<ul>$&</ul>');
+  
+  html = html.replace(/^(\d+)\. (.*?)$/gm, '<li>$2</li>');
+  html = html.replace(/<li>.*?(<li>.*?)+/g, '<ol>$&</ol>');
   
   // Wrap in paragraph if not already
   if (!html.startsWith('<')) {

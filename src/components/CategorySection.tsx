@@ -1,53 +1,77 @@
 
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCategoryCounts } from "@/utils/articleUtils";
 
-const categories = [
+const categoryData = [
   {
     name: "Philosophy",
     description: "Explorations of meaning, ethics, and the human condition",
     slug: "philosophy",
-    count: 12,
+    count: 0,
     icon: "🧠"
   },
   {
     name: "Technology",
     description: "Analysis of emerging tech trends and their societal impact",
     slug: "technology",
-    count: 8,
+    count: 0,
     icon: "💻"
   },
   {
     name: "Psychology",
     description: "Understanding the mind and human behavior patterns",
     slug: "psychology",
-    count: 7,
+    count: 0,
     icon: "🧪"
   },
   {
     name: "Culture",
     description: "Reflections on art, media, and cultural movements",
     slug: "culture",
-    count: 10,
+    count: 0,
     icon: "🎭"
   },
   {
     name: "Politics",
     description: "Thoughtful perspectives on governance and policy",
     slug: "politics",
-    count: 6,
+    count: 0,
     icon: "🏛️"
   },
   {
     name: "Economics",
     description: "Insights on markets, incentives, and financial systems",
     slug: "economics",
-    count: 5,
+    count: 0,
     icon: "📊"
   }
 ];
 
 export function CategorySection() {
+  const [categories, setCategories] = useState(categoryData);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const updateCategoryCounts = async () => {
+      try {
+        const counts = await getCategoryCounts();
+        const updatedCategories = categories.map(category => ({
+          ...category,
+          count: counts[category.slug.toLowerCase()] || 0
+        }));
+        setCategories(updatedCategories);
+      } catch (error) {
+        console.error("Error fetching category counts:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    updateCategoryCounts();
+  }, []);
+
   return (
     <section className="py-16 bg-secondary">
       <div className="container-custom">

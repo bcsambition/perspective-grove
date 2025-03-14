@@ -6,71 +6,96 @@ const Privacy = () => {
     <>
       <Helmet>
         <title>Privacy Policy | Thoughts & Analysis</title>
-        <meta name="description" content="Privacy policy for Thoughts & Analysis personal website." />
+        <meta name="description" content="Privacy policy for Thoughts & Analysis website." />
         <meta property="og:title" content="Privacy Policy | Thoughts & Analysis" />
-        <meta property="og:description" content="Privacy policy for Thoughts & Analysis personal website." />
+        <meta property="og:description" content="Privacy policy for Thoughts & Analysis website." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://example.com/privacy" />
         <meta name="twitter:card" content="summary" />
         <link rel="canonical" href="https://example.com/privacy" />
       </Helmet>
 
-      <section className="py-12">
-        <div className="container-custom max-w-3xl">
-          <h1 className="text-center mb-8">Privacy Policy</h1>
+      <section className="py-16">
+        <div className="container-custom max-w-4xl">
+          <h1 className="mb-8 text-center">Privacy Policy</h1>
           
           <div className="prose prose-lg dark:prose-invert max-w-none">
-            <p>Last Updated: October 1, 2023</p>
+            <p>Last updated: January 1, 2023</p>
             
             <h2>Introduction</h2>
             <p>
-              This Privacy Policy explains how I collect, use, disclose, and safeguard your information when you visit my personal website, including any other media form, media channel, mobile website, or mobile application related or connected thereto (collectively, the "Site").
+              This Privacy Policy describes how your personal information is collected, used, and shared when you visit 
+              Thoughts & Analysis ("the Site"). We respect your privacy and are committed to protecting your personal data.
             </p>
             
-            <h2>Information Collection</h2>
-            <p>I may collect information about you in a variety of ways including:</p>
-            
-            <h3>Personal Data</h3>
+            <h2>Information We Collect</h2>
             <p>
-              When you subscribe to the newsletter, I collect your email address. This is the only personally identifiable information I intentionally collect.
+              When you visit the Site, we automatically collect certain information about your device, including information 
+              about your web browser, IP address, time zone, and some of the cookies that are installed on your device.
             </p>
-            
-            <h3>Analytics</h3>
             <p>
-              I use privacy-focused analytics to collect information about your browsing behaviors. This data is anonymized and only used to understand general traffic patterns and improve the Site.
+              Additionally, as you browse the Site, we collect information about the individual web pages that you view, 
+              what websites or search terms referred you to the Site, and information about how you interact with the Site.
             </p>
             
-            <h2>Use of Your Information</h2>
-            <p>Having accurate information about you permits me to provide you with a smooth, efficient, and customized experience. Specifically, I may use information collected about you via the Site to:</p>
+            <h2>How We Use Your Information</h2>
+            <p>We use the information we collect to:</p>
             <ul>
-              <li>Send you a newsletter if you've subscribed</li>
-              <li>Increase the efficiency and operation of the Site</li>
-              <li>Monitor and analyze usage and trends to improve your experience with the Site</li>
+              <li>Improve and optimize our Site</li>
+              <li>Understand user trends and preferences</li>
+              <li>Develop new features and functionality</li>
+              <li>Prevent fraudulent activity and improve security</li>
+              <li>Deliver content that may be of interest to you, such as newsletter updates</li>
             </ul>
             
-            <h2>Third-Party Service Providers</h2>
+            <h2>Sharing Your Information</h2>
             <p>
-              I may share your information with third parties that perform services for me or on my behalf, including newsletter delivery and analytics.
+              We share your Personal Information with third parties to help us use your Personal Information, as described above.
+              For example, we use Google Analytics to help us understand how our visitors use the Site. 
+              You can read more about how Google uses your Personal Information here: 
+              <a href="https://www.google.com/intl/en/policies/privacy/" target="_blank" rel="noopener noreferrer">
+                https://www.google.com/intl/en/policies/privacy/
+              </a>.
+            </p>
+            <p>
+              We may also share your Personal Information to comply with applicable laws and regulations, to respond to a 
+              subpoena, search warrant or other lawful request for information we receive, or to otherwise protect our rights.
             </p>
             
-            <h2>Cookies and Web Beacons</h2>
+            <h2>Your Rights</h2>
             <p>
-              I may use cookies, web beacons, tracking pixels, and other tracking technologies on the Site to help customize the Site and improve your experience. Most browsers are set to accept cookies by default. You can remove or reject cookies, but be aware that such action could affect the availability and functionality of the Site.
+              If you are a European resident, you have the right to access personal information we hold about you and to ask 
+              that your personal information be corrected, updated, or deleted. If you would like to exercise this right, 
+              please contact us through the contact information below.
+            </p>
+            <p>
+              Additionally, if you are a European resident we note that we are processing your information in order to 
+              fulfill contracts we might have with you (for example if you make an order through the Site), or otherwise 
+              to pursue our legitimate business interests listed above.
             </p>
             
-            <h2>Security of Your Information</h2>
+            <h2>Cookies</h2>
             <p>
-              I use administrative, technical, and physical security measures to help protect your personal information. While I have taken reasonable steps to secure the personal information you provide, please be aware that no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.
+              We use cookies and similar technologies to improve your browsing experience, analyze site traffic, and 
+              understand where our audience is coming from. You can control cookies through your browser settings and 
+              other tools. By continuing to use our website, you consent to our use of cookies.
             </p>
             
-            <h2>Policy for Children</h2>
+            <h2>Data Retention</h2>
             <p>
-              I do not knowingly solicit information from or market to children under the age of 13. If you become aware of any data I have collected from children under age 13, please contact me.
+              We will maintain your Personal Information for our records unless and until you ask us to delete this information.
             </p>
             
-            <h2>Contact</h2>
+            <h2>Changes</h2>
             <p>
-              If you have questions or comments about this Privacy Policy, please contact me at: <a href="mailto:your.email@example.com">your.email@example.com</a>
+              We may update this privacy policy from time to time in order to reflect, for example, changes to our practices 
+              or for other operational, legal or regulatory reasons.
+            </p>
+            
+            <h2>Contact Us</h2>
+            <p>
+              For more information about our privacy practices, if you have questions, or if you would like to make a 
+              complaint, please contact us by e-mail at privacy@example.com.
             </p>
           </div>
         </div>

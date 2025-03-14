@@ -1,12 +1,177 @@
 
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Calendar, User, Tag, Share2, Twitter, Facebook, Linkedin, Mail, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Article, getArticleBySlug } from "@/utils/articleUtils";
 
-// Mock data for a single article
+const ArticlePage = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const [article, setArticle] = useState<Article | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchArticle = async () => {
+      setIsLoading(true);
+      if (slug) {
+        try {
+          const fetchedArticle = await getArticleBySlug(slug);
+          if (fetchedArticle) {
+            setArticle(fetchedArticle);
+          } else {
+            // Fallback to the hardcoded article if file not found
+            setArticle(articleData["paradox-of-choice"] as unknown as Article);
+          }
+        } catch (error) {
+          console.error("Error fetching article:", error);
+          setArticle(articleData["paradox-of-choice"] as unknown as Article);
+        }
+      }
+      setIsLoading(false);
+    };
+    
+    fetchArticle();
+  }, [slug]);
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[70vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary mb-4 mx-auto"></div>
+          <p className="text-muted-foreground">Loading article...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!article) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] py-16 px-4 text-center">
+        <h1 className="text-8xl font-bold mb-6 text-gradient">404</h1>
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">Article Not Found</h2>
+        
+        <p className="text-muted-foreground text-lg max-w-md mb-8">
+          The article you're looking for doesn't exist or has been moved.
+        </p>
+        
+        <Button asChild size="lg">
+          <Link to="/articles" className="flex items-center gap-2">
+            <ArrowLeft size={18} />
+            Back to Articles
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+  
+  const isBangla = article.language === 'bn';
+  const contentClass = isBangla ? 'font-bangla' : '';
+  
+  return (
+    <>
+      <Helmet>
+        <title>{article.title} | Thoughts & Analysis</title>
+        <meta name="description" content={article.excerpt} />
+        <meta property="og:title" content={`${article.title} | Thoughts & Analysis`} />
+        <meta property="og:description" content={article.excerpt} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://example.com/article/${slug}`} />
+        <meta property="og:image" content={article.image} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article.title} />
+        <meta name="twitter:description" content={article.excerpt} />
+        <meta name="twitter:image" content={article.image} />
+        <link rel="canonical" href={`https://example.com/article/${slug}`} />
+      </Helmet>
+
+      <article className="py-12">
+        <div className="container-custom max-w-4xl">
+          {/* Back button */}
+          <div className="mb-8">
+            <Button variant="ghost" asChild className="pl-0 hover:pl-0">
+              <Link to="/articles" className="flex items-center gap-2">
+                <ArrowLeft size={16} />
+                All Articles
+              </Link>
+            </Button>
+          </div>
+          
+          {/* Article header */}
+          <header className={`mb-10 ${isBangla ? 'font-bangla' : ''}`}>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge variant="secondary">
+                <Link to={`/category/${article.category.toLowerCase()}`}>{article.category}</Link>
+              </Badge>
+              {article.tags.map(tag => (
+                <Badge variant="outline" key={tag}>{tag}</Badge>
+              ))}
+            </div>
+            
+            <h1 className="mb-6">{article.title}</h1>
+            
+            <div className="flex flex-wrap gap-6 text-muted-foreground text-sm">
+              <div className="flex items-center gap-2">
+                <User size={16} />
+                {article.author}
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar size={16} />
+                {article.date}
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={16} />
+                {article.readTime}
+              </div>
+            </div>
+          </header>
+          
+          {/* Featured image */}
+          <div className="mb-10 rounded-lg overflow-hidden">
+            <img 
+              src={article.image} 
+              alt={article.title} 
+              className="w-full h-auto"
+            />
+          </div>
+          
+          {/* Article content */}
+          <div 
+            className={`prose prose-lg dark:prose-invert max-w-none mb-10 ${contentClass}`} 
+            dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br>') }}>
+          </div>
+          
+          {/* Share section */}
+          <Separator className="my-10" />
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Share2 size={18} /> Share this article
+            </h3>
+            <div className="flex gap-2">
+              <Button variant="outline" size="icon" aria-label="Share on Twitter">
+                <Twitter size={18} />
+              </Button>
+              <Button variant="outline" size="icon" aria-label="Share on Facebook">
+                <Facebook size={18} />
+              </Button>
+              <Button variant="outline" size="icon" aria-label="Share on LinkedIn">
+                <Linkedin size={18} />
+              </Button>
+              <Button variant="outline" size="icon" aria-label="Share via Email">
+                <Mail size={18} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </>
+  );
+};
+
+// Fallback mock data in case the file system doesn't work in the client environment
 const articleData = {
   "paradox-of-choice": {
     title: "The Paradox of Choice: Why More Options Lead to Less Happiness",
@@ -66,114 +231,9 @@ const articleData = {
     readTime: "8 min read",
     category: "Philosophy",
     tags: ["psychology", "decision-making", "wellbeing", "modern life"],
+    language: "en",
     image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
   }
-};
-
-const ArticlePage = () => {
-  const { slug } = useParams<{ slug: string }>();
-  
-  // Check if article exists, otherwise use a default
-  const article = articleData[slug as keyof typeof articleData] || articleData["paradox-of-choice"];
-  
-  return (
-    <>
-      <Helmet>
-        <title>{article.title} | Thoughts & Analysis</title>
-        <meta name="description" content={article.excerpt} />
-        <meta property="og:title" content={`${article.title} | Thoughts & Analysis`} />
-        <meta property="og:description" content={article.excerpt} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://example.com/article/${slug}`} />
-        <meta property="og:image" content={article.image} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={article.title} />
-        <meta name="twitter:description" content={article.excerpt} />
-        <meta name="twitter:image" content={article.image} />
-        <link rel="canonical" href={`https://example.com/article/${slug}`} />
-      </Helmet>
-
-      <article className="py-12">
-        <div className="container-custom max-w-4xl">
-          {/* Back button */}
-          <div className="mb-8">
-            <Button variant="ghost" asChild className="pl-0 hover:pl-0">
-              <Link to="/articles" className="flex items-center gap-2">
-                <ArrowLeft size={16} />
-                All Articles
-              </Link>
-            </Button>
-          </div>
-          
-          {/* Article header */}
-          <header className="mb-10">
-            <div className="flex flex-wrap gap-2 mb-4">
-              <Badge variant="secondary">
-                <Link to={`/category/${article.category.toLowerCase()}`}>{article.category}</Link>
-              </Badge>
-              {article.tags.map(tag => (
-                <Badge variant="outline" key={tag}>{tag}</Badge>
-              ))}
-            </div>
-            
-            <h1 className="mb-6">{article.title}</h1>
-            
-            <div className="flex flex-wrap gap-6 text-muted-foreground text-sm">
-              <div className="flex items-center gap-2">
-                <User size={16} />
-                {article.author}
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={16} />
-                {article.date}
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock size={16} />
-                {article.readTime}
-              </div>
-            </div>
-          </header>
-          
-          {/* Featured image */}
-          <div className="mb-10 rounded-lg overflow-hidden">
-            <img 
-              src={article.image} 
-              alt={article.title} 
-              className="w-full h-auto"
-            />
-          </div>
-          
-          {/* Article content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mb-10" 
-            dangerouslySetInnerHTML={{ __html: article.content }}>
-          </div>
-          
-          {/* Share section */}
-          <Separator className="my-10" />
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Share2 size={18} /> Share this article
-            </h3>
-            <div className="flex gap-2">
-              <Button variant="outline" size="icon" aria-label="Share on Twitter">
-                <Twitter size={18} />
-              </Button>
-              <Button variant="outline" size="icon" aria-label="Share on Facebook">
-                <Facebook size={18} />
-              </Button>
-              <Button variant="outline" size="icon" aria-label="Share on LinkedIn">
-                <Linkedin size={18} />
-              </Button>
-              <Button variant="outline" size="icon" aria-label="Share via Email">
-                <Mail size={18} />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </article>
-    </>
-  );
 };
 
 export default ArticlePage;

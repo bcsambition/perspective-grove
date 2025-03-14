@@ -22,6 +22,7 @@ export default {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
         serif: ["Merriweather", "serif"],
+        bangla: ["Tiro Bangla", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",

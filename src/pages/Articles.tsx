@@ -1,86 +1,43 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Search } from "lucide-react";
-
-// Combine featured and recent posts for the articles page
-const allPosts = [
-  {
-    id: 1,
-    title: "The Paradox of Choice: Why More Options Lead to Less Happiness",
-    excerpt: "An examination of how the abundance of choices in modern society can actually decrease our satisfaction and well-being.",
-    category: "Philosophy",
-    date: "June 15, 2023",
-    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "paradox-of-choice"
-  },
-  {
-    id: 2,
-    title: "Digital Minimalism: Reclaiming Attention in the Age of Distraction",
-    excerpt: "How embracing a philosophy of technology use focused on intentionality can improve your digital life and mental health.",
-    category: "Technology",
-    date: "May 23, 2023",
-    image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "digital-minimalism"
-  },
-  {
-    id: 3,
-    title: "The Ethics of Artificial Intelligence: Navigating the New Frontier",
-    excerpt: "Exploring the moral implications of AI development and how we can ensure it benefits humanity.",
-    category: "Ethics",
-    date: "April 10, 2023",
-    image: "https://images.unsplash.com/photo-1677442135968-6268ab481c8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "ethics-of-ai"
-  },
-  {
-    id: 4,
-    title: "The Illusion of Productivity: Quality vs. Quantity in Work",
-    excerpt: "Why focusing on the quality of our efforts often yields better results than maximizing our output.",
-    category: "Productivity",
-    date: "July 5, 2023",
-    image: "https://images.unsplash.com/photo-1483058712412-4245e9b90334?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "illusion-of-productivity"
-  },
-  {
-    id: 5,
-    title: "Digital Gardens: A New Framework for Personal Knowledge Management",
-    excerpt: "How the concept of digital gardens is changing how we collect, nurture, and share ideas online.",
-    category: "Knowledge",
-    date: "July 12, 2023",
-    image: "https://images.unsplash.com/photo-1523821741446-edb2b68bb7a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "digital-gardens"
-  },
-  {
-    id: 6,
-    title: "Cognitive Biases: The Hidden Forces That Shape Our Decisions",
-    excerpt: "An exploration of how systematic errors in thinking influence our judgment and decision-making processes.",
-    category: "Psychology",
-    date: "July 22, 2023",
-    image: "https://images.unsplash.com/photo-1579447167782-51d662a9a720?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "cognitive-biases"
-  },
-  {
-    id: 7,
-    title: "The Value of Boredom in a Hyperstimulated World",
-    excerpt: "Examining how embracing moments of boredom can enhance creativity and mental well-being.",
-    category: "Mindfulness",
-    date: "July 29, 2023",
-    image: "https://images.unsplash.com/photo-1475070929565-c985b496cb9f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    slug: "value-of-boredom"
-  }
-];
-
-const categories = ["All", "Philosophy", "Technology", "Ethics", "Productivity", "Knowledge", "Psychology", "Mindfulness"];
+import { Article, getAllArticles } from "@/utils/articleUtils";
 
 const Articles = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [visiblePosts, setVisiblePosts] = useState(6);
+  const [allPosts, setAllPosts] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setIsLoading(true);
+      try {
+        const articles = await getAllArticles();
+        setAllPosts(articles);
+        
+        // Extract unique categories
+        const uniqueCategories = ["All", ...new Set(articles.map(article => article.category))];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error("Error fetching articles:", error);
+        // Fallback to sample data if there's an error
+        setAllPosts(samplePosts);
+        setCategories(["All", ...new Set(samplePosts.map(post => post.category))]);
+      }
+      setIsLoading(false);
+    };
+    
+    fetchArticles();
+  }, []);
 
   // Filter posts based on search term and active category
   const filteredPosts = allPosts.filter((post) => {
@@ -93,6 +50,17 @@ const Articles = () => {
   const handleLoadMore = () => {
     setVisiblePosts(prev => Math.min(prev + 3, filteredPosts.length));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[70vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary mb-4 mx-auto"></div>
+          <p className="text-muted-foreground">Loading articles...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -143,37 +111,43 @@ const Articles = () => {
           {filteredPosts.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPosts.slice(0, visiblePosts).map((post) => (
-                  <Card key={post.id} className="card-hover overflow-hidden h-full flex flex-col">
-                    <div className="h-48 overflow-hidden">
-                      <img 
-                        src={post.image} 
-                        alt={post.title} 
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                      />
-                    </div>
-                    <CardHeader>
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="secondary">{post.category}</Badge>
-                        <span className="text-xs text-muted-foreground">{post.date}</span>
+                {filteredPosts.slice(0, visiblePosts).map((post, index) => {
+                  const isBangla = post.language === 'bn';
+                  
+                  return (
+                    <Card key={index} className="card-hover overflow-hidden h-full flex flex-col">
+                      <div className="h-48 overflow-hidden">
+                        <img 
+                          src={post.image} 
+                          alt={post.title} 
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
                       </div>
-                      <CardTitle className="line-clamp-2">
-                        <Link to={`/article/${post.slug}`} className="hover:text-primary transition-colors">
-                          {post.title}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription className="line-clamp-3">{post.excerpt}</CardDescription>
-                    </CardHeader>
-                    <CardFooter className="mt-auto pt-0">
-                      <Button variant="ghost" asChild className="p-0 h-auto font-semibold">
-                        <Link to={`/article/${post.slug}`} className="flex items-center gap-2 group">
-                          Read More
-                          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                      <CardHeader>
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="secondary">{post.category}</Badge>
+                          <span className="text-xs text-muted-foreground">{post.date}</span>
+                        </div>
+                        <CardTitle className={`line-clamp-2 ${isBangla ? 'font-bangla' : ''}`}>
+                          <Link to={`/article/${post.slug}`} className="hover:text-primary transition-colors">
+                            {post.title}
+                          </Link>
+                        </CardTitle>
+                        <CardDescription className={`line-clamp-3 ${isBangla ? 'font-bangla' : ''}`}>
+                          {post.excerpt}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardFooter className="mt-auto pt-0">
+                        <Button variant="ghost" asChild className="p-0 h-auto font-semibold">
+                          <Link to={`/article/${post.slug}`} className="flex items-center gap-2 group">
+                            Read More
+                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
               </div>
               
               {/* Load more button */}
@@ -196,5 +170,39 @@ const Articles = () => {
     </>
   );
 };
+
+// Sample posts for fallback
+const samplePosts = [
+  {
+    id: 1,
+    title: "The Paradox of Choice: Why More Options Lead to Less Happiness",
+    excerpt: "An examination of how the abundance of choices in modern society can actually decrease our satisfaction and well-being.",
+    category: "Philosophy",
+    date: "June 15, 2023",
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    slug: "paradox-of-choice",
+    language: "en"
+  },
+  {
+    id: 2,
+    title: "Digital Minimalism: Reclaiming Attention in the Age of Distraction",
+    excerpt: "How embracing a philosophy of technology use focused on intentionality can improve your digital life and mental health.",
+    category: "Technology",
+    date: "May 23, 2023",
+    image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    slug: "digital-minimalism",
+    language: "en"
+  },
+  {
+    id: 3,
+    title: "The Ethics of Artificial Intelligence: Navigating the New Frontier",
+    excerpt: "Exploring the moral implications of AI development and how we can ensure it benefits humanity.",
+    category: "Ethics",
+    date: "April 10, 2023",
+    image: "https://images.unsplash.com/photo-1677442135968-6268ab481c8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+    slug: "ethics-of-ai",
+    language: "en"
+  }
+];
 
 export default Articles;

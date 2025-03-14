@@ -172,36 +172,45 @@ const Articles = () => {
 };
 
 // Sample posts for fallback
-const samplePosts = [
+const samplePosts: Article[] = [
   {
-    id: 1,
     title: "The Paradox of Choice: Why More Options Lead to Less Happiness",
     excerpt: "An examination of how the abundance of choices in modern society can actually decrease our satisfaction and well-being.",
     category: "Philosophy",
     date: "June 15, 2023",
     image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     slug: "paradox-of-choice",
-    language: "en"
+    language: "en",
+    author: "Alex Johnson",
+    readTime: "8 min read",
+    tags: ["psychology", "decision-making", "wellbeing"],
+    content: "Sample content for the paradox of choice article."
   },
   {
-    id: 2,
     title: "Digital Minimalism: Reclaiming Attention in the Age of Distraction",
     excerpt: "How embracing a philosophy of technology use focused on intentionality can improve your digital life and mental health.",
     category: "Technology",
     date: "May 23, 2023",
     image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     slug: "digital-minimalism",
-    language: "en"
+    language: "en",
+    author: "Emma Thompson",
+    readTime: "6 min read",
+    tags: ["technology", "productivity", "wellness"],
+    content: "Sample content for the digital minimalism article."
   },
   {
-    id: 3,
     title: "The Ethics of Artificial Intelligence: Navigating the New Frontier",
     excerpt: "Exploring the moral implications of AI development and how we can ensure it benefits humanity.",
     category: "Ethics",
     date: "April 10, 2023",
     image: "https://images.unsplash.com/photo-1677442135968-6268ab481c8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
     slug: "ethics-of-ai",
-    language: "en"
+    language: "en",
+    author: "Michael Chen",
+    readTime: "10 min read",
+    tags: ["AI", "ethics", "technology", "future"],
+    content: "Sample content for the ethics of AI article."
   }
 ];
 

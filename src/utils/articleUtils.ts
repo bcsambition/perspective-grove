@@ -1,4 +1,3 @@
-
 export interface Article {
   title: string;
   slug: string;
@@ -42,8 +41,8 @@ const sampleArticles: Article[] = [
     content: "## The Problem\n\nIn today's hyperconnected world, we're constantly bombarded with digital distractions. The average person checks their phone 96 times a day—that's once every 10 minutes of waking life. Social media, endless news cycles, and the persistent ping of notifications fragment our attention and leave us feeling exhausted yet somehow still craving more screen time."
   },
   {
-    title: "Exploring Bengali Cultural Heritage",
-    excerpt: "A deep dive into the rich traditions, art forms, and historical significance of Bengali culture.",
+    title: "বাংলা সংস্কৃতি এবং ঐতিহ্য",
+    excerpt: "বাংলা সংস্কৃতি, ঐতিহ্য এবং এর সৌন্দর্য সম্পর্কে একটি অন্বেষণ।",
     category: "Culture",
     date: "April 3, 2023",
     image: "https://images.unsplash.com/photo-1623775306043-5d496465c31a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
@@ -52,7 +51,7 @@ const sampleArticles: Article[] = [
     author: "Rahul Sen",
     readTime: "7 min read",
     tags: ["culture", "history", "traditions", "arts"],
-    content: "## সাংস্কৃতিক ঐতিহ্য\n\nবাংলা সংস্কৃতি হাজার বছরের ইতিহাস নিয়ে গড়ে উঠেছে। এর সমৃদ্ধ সাহিত্য, সংগীত, নৃত্য, এবং চারুকলা বিশ্বজুড়ে প্রশংসিত। রবীন্দ্রনাথ ঠাকুর, কাজী নজরুল ইসলাম, এবং অন্যান্য মহান শিল্পীদের অবদান বাংলা সংস্কৃতিকে একটি অনন্য পরিচয় দিয়েছে।"
+    content: "## সাংস্কৃতিক ঐতি��্য\n\nবাংলা সংস্কৃতি হাজার বছরের ইতিহাস নিয়ে গড়ে উঠেছে। এর সমৃদ্ধ সাহিত্য, সংগীত, নৃত্য, এবং চারুকলা বিশ্বজুড়ে প্রশংসিত। রবীন্দ্রনাথ ঠাকুর, কাজী নজরুল ইসলাম, এবং অন্যান্য মহান শিল্পীদের অবদান বাংলা সংস্কৃতিকে একটি অনন্য পরিচয় দিয়েছে।"
   }
 ];
 
@@ -79,8 +78,10 @@ export const getAllArticles = async (): Promise<Article[]> => {
     for (const path in articleModules) {
       try {
         const content = articleModules[path];
+        console.log(`Parsing article at ${path}`);
         const article = parseArticleContent(content);
         if (article) {
+          console.log(`Successfully parsed article: ${article.title}`);
           articles.push(article);
           hasValidArticles = true;
         }
@@ -137,69 +138,70 @@ export const getCategoryCounts = async (): Promise<Record<string, number>> => {
   return counts;
 };
 
-// Helper function to parse article content
+// Completely rewritten parser to handle different markdown formats
 function parseArticleContent(fileContent: string): Article | null {
   try {
     // Extract frontmatter and content
-    const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/;
-    const match = fileContent.match(frontmatterRegex);
+    const content = fileContent.trim();
     
-    if (!match) {
-      // Try alternate format with different newlines
-      const altRegex = /^---([\s\S]*?)---([\s\S]*)$/;
-      const altMatch = fileContent.match(altRegex);
+    // Try different regex patterns to match frontmatter
+    let frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+    
+    if (!frontmatterMatch) {
+      // Try alternate format
+      frontmatterMatch = content.match(/^---\s*([\s\S]*?)\s*---\s*([\s\S]*)$/);
       
-      if (!altMatch) {
+      if (!frontmatterMatch) {
+        console.error("Could not parse frontmatter format");
         throw new Error('Invalid article format');
       }
-      
-      // Use alternate match groups
-      return processArticleMatch(altMatch[1].trim(), altMatch[2].trim());
     }
     
-    // Use standard match groups
-    return processArticleMatch(match[1], match[2]);
+    const frontmatterStr = frontmatterMatch[1].trim();
+    const articleContent = frontmatterMatch[2].trim();
+    
+    // Parse frontmatter into an object
+    const frontmatter: Record<string, any> = {};
+    
+    // Split by lines and process each key-value pair
+    const lines = frontmatterStr.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (!trimmedLine || trimmedLine.startsWith('#')) continue;
+      
+      const colonIndex = trimmedLine.indexOf(':');
+      if (colonIndex === -1) continue;
+      
+      const key = trimmedLine.slice(0, colonIndex).trim();
+      let value = trimmedLine.slice(colonIndex + 1).trim();
+      
+      // Handle arrays (like tags)
+      if (value.startsWith('[') && value.endsWith(']')) {
+        value = value.slice(1, -1);
+        frontmatter[key] = value.split(',').map(item => 
+          item.trim().replace(/["']/g, '')  // Remove quotes
+        );
+      } else {
+        frontmatter[key] = value;
+      }
+    }
+    
+    // Create the article object
+    return {
+      title: frontmatter.title || '',
+      slug: frontmatter.slug || '',
+      excerpt: frontmatter.excerpt || '',
+      author: frontmatter.author || '',
+      date: frontmatter.date || '',
+      readTime: frontmatter.readTime || '',
+      category: frontmatter.category || '',
+      tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
+      language: frontmatter.language || 'en',
+      image: frontmatter.image || '',
+      content: articleContent
+    };
   } catch (error) {
     console.error('Error parsing article:', error);
     return null;
   }
-}
-
-function processArticleMatch(frontmatterStr: string, content: string): Article {
-  const frontmatter: Record<string, any> = {};
-  
-  // Parse frontmatter
-  const lines = frontmatterStr.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (!trimmedLine) continue;
-    
-    const colonIndex = trimmedLine.indexOf(':');
-    if (colonIndex === -1) continue;
-    
-    const key = trimmedLine.slice(0, colonIndex).trim();
-    let value = trimmedLine.slice(colonIndex + 1).trim();
-    
-    // Handle arrays (tags)
-    if (value.startsWith('[') && value.endsWith(']')) {
-      value = value.slice(1, -1);
-      frontmatter[key] = value.split(',').map(item => item.trim().replace(/"/g, '').replace(/'/g, ''));
-    } else {
-      frontmatter[key] = value;
-    }
-  }
-  
-  return {
-    title: frontmatter.title || '',
-    slug: frontmatter.slug || '',
-    excerpt: frontmatter.excerpt || '',
-    author: frontmatter.author || '',
-    date: frontmatter.date || '',
-    readTime: frontmatter.readTime || '',
-    category: frontmatter.category || '',
-    tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
-    language: frontmatter.language || 'en',
-    image: frontmatter.image || '',
-    content: content.trim()
-  };
 }

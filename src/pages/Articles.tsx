@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowRight, Search } from "lucide-react";
 import { Article, getAllArticles } from "@/utils/articleUtils";
+import { toast } from "sonner";
 
 const Articles = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,16 +23,19 @@ const Articles = () => {
       setIsLoading(true);
       try {
         const articles = await getAllArticles();
+        console.log(`Fetched ${articles.length} articles`);
         setAllPosts(articles);
         
         // Extract unique categories
         const uniqueCategories = ["All", ...new Set(articles.map(article => article.category))];
         setCategories(uniqueCategories);
+        
+        if (articles.length === 0) {
+          toast.error("No articles found. Using sample content.");
+        }
       } catch (error) {
         console.error("Error fetching articles:", error);
-        // Fallback to sample data if there's an error
-        setAllPosts(samplePosts);
-        setCategories(["All", ...new Set(samplePosts.map(post => post.category))]);
+        toast.error("Failed to load articles. Using sample content.");
       }
       setIsLoading(false);
     };
@@ -170,6 +174,5 @@ const Articles = () => {
     </>
   );
 };
-
 
 export default Articles;

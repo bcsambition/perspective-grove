@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -14,24 +15,41 @@ const ArticlePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [article, setArticle] = useState<Article | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchArticle = async () => {
       setIsLoading(true);
+      setError(null);
+      
       if (slug) {
         try {
           const fetchedArticle = await getArticleBySlug(slug);
+          
           if (fetchedArticle) {
+            console.log("Article loaded:", fetchedArticle.title);
+            console.log("Content length:", fetchedArticle.content.length);
             setArticle(fetchedArticle);
           } else {
-            // Fallback to the hardcoded article if file not found
-            setArticle(articleData["paradox-of-choice"] as unknown as Article);
+            console.error("Article not found for slug:", slug);
+            // Try fallback
+            if (articleData[slug as keyof typeof articleData]) {
+              console.log("Using fallback article data");
+              setArticle(articleData[slug as keyof typeof articleData] as unknown as Article);
+            } else {
+              setError("Article not found");
+            }
           }
         } catch (error) {
           console.error("Error fetching article:", error);
-          setArticle(articleData["paradox-of-choice"] as unknown as Article);
+          if (articleData[slug as keyof typeof articleData]) {
+            setArticle(articleData[slug as keyof typeof articleData] as unknown as Article);
+          } else {
+            setError("Error loading article");
+          }
         }
       }
+      
       setIsLoading(false);
     };
     
@@ -42,7 +60,7 @@ const ArticlePage = () => {
     return <LoadingSpinner />;
   }
   
-  if (!article) {
+  if (error || !article) {
     return <NotFound />;
   }
   

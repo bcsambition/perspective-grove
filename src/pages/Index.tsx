@@ -1,13 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { Helmet } from "react-helmet-async";
+import { HeroSection } from "@/components/HeroSection";
+import { FeaturedPosts } from "@/components/FeaturedPosts";
+import { CategorySection } from "@/components/CategorySection";
+import { RecentPosts } from "@/components/RecentPosts";
+import { AboutSection } from "@/components/AboutSection";
+import { NewsletterSection } from "@/components/NewsletterSection";
+import { CallToActionSection } from "@/components/CallToActionSection";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Helmet>
+        <title>Thoughts & Analysis | A Personal Website</title>
+        <meta name="description" content="A personal website sharing thoughtful analysis on philosophy, technology, and more." />
+        <meta property="og:title" content="Thoughts & Analysis | A Personal Website" />
+        <meta property="og:description" content="A personal website sharing thoughtful analysis on philosophy, technology, and more." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://example.com" />
+        <meta property="og:image" content="https://example.com/og-image.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Thoughts & Analysis | A Personal Website" />
+        <meta name="twitter:description" content="A personal website sharing thoughtful analysis on philosophy, technology, and more." />
+        <meta name="twitter:image" content="https://example.com/og-image.png" />
+        <link rel="canonical" href="https://example.com" />
+      </Helmet>
+
+      <HeroSection />
+      <FeaturedPosts />
+      <CategorySection />
+      <RecentPosts />
+      <AboutSection />
+      <NewsletterSection />
+      <CallToActionSection />
+    </>
   );
 };
 

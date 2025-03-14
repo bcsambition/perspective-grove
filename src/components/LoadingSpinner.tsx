@@ -1,7 +1,7 @@
 
 import React from "react";
 
-const LoadingSpinner = () => {
+export const LoadingSpinner = () => {
   return (
     <div className="flex justify-center items-center min-h-[70vh]">
       <div className="text-center">

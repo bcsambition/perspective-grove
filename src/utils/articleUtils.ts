@@ -1,8 +1,4 @@
 
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-
 export interface Article {
   title: string;
   slug: string;
@@ -17,28 +13,13 @@ export interface Article {
   content: string;
 }
 
+// Map of article slugs to their import functions
+const articleModules = import.meta.glob('../articles/*.md', { as: 'raw', eager: true });
+
 export const getArticleBySlug = async (slug: string): Promise<Article | undefined> => {
   try {
-    const articlesDirectory = path.join(process.cwd(), 'src/articles');
-    const filenames = fs.readdirSync(articlesDirectory);
-    
-    for (const filename of filenames) {
-      if (filename.endsWith('.md')) {
-        const filePath = path.join(articlesDirectory, filename);
-        const fileContents = fs.readFileSync(filePath, 'utf8');
-        const { data, content } = matter(fileContents);
-        
-        if (data.slug === slug) {
-          return {
-            ...data,
-            content,
-            slug: data.slug,
-            tags: data.tags || [],
-          } as Article;
-        }
-      }
-    }
-    return undefined;
+    const articles = await getAllArticles();
+    return articles.find(article => article.slug === slug);
   } catch (error) {
     console.error('Error fetching article:', error);
     return undefined;
@@ -47,26 +28,18 @@ export const getArticleBySlug = async (slug: string): Promise<Article | undefine
 
 export const getAllArticles = async (): Promise<Article[]> => {
   try {
-    const articlesDirectory = path.join(process.cwd(), 'src/articles');
-    const filenames = fs.readdirSync(articlesDirectory);
+    const articles: Article[] = [];
     
-    const articles = filenames
-      .filter(filename => filename.endsWith('.md'))
-      .map(filename => {
-        const filePath = path.join(articlesDirectory, filename);
-        const fileContents = fs.readFileSync(filePath, 'utf8');
-        const { data, content } = matter(fileContents);
-        
-        return {
-          ...data,
-          content,
-          slug: data.slug,
-          tags: data.tags || [],
-        } as Article;
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    for (const path in articleModules) {
+      const content = articleModules[path];
+      const article = parseArticleContent(content);
+      if (article) {
+        articles.push(article);
+      }
+    }
     
-    return articles;
+    // Sort by date, newest first
+    return articles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   } catch (error) {
     console.error('Error fetching articles:', error);
     return [];
@@ -93,3 +66,54 @@ export const getArticlesByLanguage = async (language: string): Promise<Article[]
     article.language.toLowerCase() === language.toLowerCase()
   );
 };
+
+// Helper function to parse article content
+function parseArticleContent(fileContent: string): Article | null {
+  try {
+    // Extract frontmatter and content
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+    const match = fileContent.match(frontmatterRegex);
+    
+    if (!match) {
+      console.error('Invalid article format');
+      return null;
+    }
+    
+    const [, frontmatterStr, content] = match;
+    const frontmatter: Record<string, any> = {};
+    
+    // Parse frontmatter
+    const lines = frontmatterStr.split('\n');
+    for (const line of lines) {
+      const [key, ...valueParts] = line.split(':');
+      if (key && valueParts.length) {
+        let value = valueParts.join(':').trim();
+        
+        // Handle arrays (tags)
+        if (value.startsWith('[') && value.endsWith(']')) {
+          value = value.slice(1, -1);
+          frontmatter[key.trim()] = value.split(',').map(item => item.trim().replace(/"/g, '').replace(/'/g, ''));
+        } else {
+          frontmatter[key.trim()] = value;
+        }
+      }
+    }
+    
+    return {
+      title: frontmatter.title || '',
+      slug: frontmatter.slug || '',
+      excerpt: frontmatter.excerpt || '',
+      author: frontmatter.author || '',
+      date: frontmatter.date || '',
+      readTime: frontmatter.readTime || '',
+      category: frontmatter.category || '',
+      tags: frontmatter.tags || [],
+      language: frontmatter.language || 'en',
+      image: frontmatter.image || '',
+      content: content.trim()
+    };
+  } catch (error) {
+    console.error('Error parsing article:', error);
+    return null;
+  }
+}
